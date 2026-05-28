@@ -1,6 +1,5 @@
 ---
 title: "A2CPS SynthStrip Normalization Issue"
-bibliography: synthstrip.bib
 ---
 [SynthStrip](https://surfer.nmr.mgh.harvard.edu/docs/synthstrip/) is used in A2CPS Release 2.0 and later for fMRIPrep processing of fMRI, and is used in diffusion MRI products since Release 1.1. 
 
