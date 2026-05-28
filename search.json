@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "synthstrip.html",
+    "href": "synthstrip.html",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "",
+    "text": "SynthStrip is used in A2CPS Release 2.0 and later for fMRIPrep processing of fMRI, and is used in diffusion MRI products since Release 1.1.\nSynthStrip is now widely used in the neuroimaging community because it is considered “best in class” and provides very reliable and accurate skull stripping. However, its particular assumptions about what that process entails may not always match other tools, possibly introducing limited inaccuracies in normalization in certain cases.",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "synthstrip.html#problem-description",
+    "href": "synthstrip.html#problem-description",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "Problem Description",
+    "text": "Problem Description\nThe job of SynthStrip is to remove the skull from a brain image — typically a T1-weighted (T1w) anatomy image, although the tool was designed to work on any modality. Removing the skull is a necessary part of several preprocessing steps, including mapping (normalizing) the brain to other brains, primarily brain templates.\n\n\n\n\n\n\nFigure 1: SynthStrip skull stripping includes the meninges (MRI image source: SynthStrip website).\n\n\n\nThere is a lingering vagueness in the imaging field about what “skull stripping” (or “brain extraction”, a term sometimes, but not always, used interchangeably) precisely mean, specifically in the handling of the meninges, the layers of soft tissue between the brain and the skull (Figure 1). While the terms “skull stripping” and “brain extraction” may perhaps imply an intended handling of the meninges (i.e., “include” versus “exclude”, respectively), in practice tools have not been precise enough until recently to enable distinguishing these rather similar goals, leading to an overlap in the intended meaning of the terms as they’re used by individual tools.\nA result of this imprecision in terminology and processing is that volumetric normalization tools that assume “brain only” data can, when encountering “brain plus meninges”, introduce a degree of mis-mapping. This is the case when supplying fMRIPrep with a mask produced from a default invocation of SynthStrip: SynthStrip produces brains with meninges included, and fMRIPrep then uses these together with templates in which meninges are not present. A T1w mis-mapping ultimately results in incorrect interpretation of other scans, e.g. fMRI, that use the anatomical scan for their own normalization.",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "synthstrip.html#details",
+    "href": "synthstrip.html#details",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "Details",
+    "text": "Details\n\n\n\n\n\n\nFigure 2: Effect of the SynthStrip --no-csf option.\n\n\n\nThe brain images in Figure 1 showing SynthStrip’s default output on a T1w image are taken from the official SynthStrip website and represent the default output. SynthStrip also has an optional --no-csf argument that attempts to exclude cerebrospinal fluid, which has the effects shown in Figure 2. When using this flag, SynthStrip produces a brain mask without meninges included. We are therefore testing this option for use in future A2CPS releases to mitigate mis-mapping effects.",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "synthstrip.html#impacts",
+    "href": "synthstrip.html#impacts",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "Impacts",
+    "text": "Impacts\n\n\n\n\n\n\nFigure 3: Default SynthStrip followed by normalization to a template brain results in gaps (where the cortex is “pushed in”).\n\n\n\nThis issue becomes particularly noticeable if there is cortical atrophy in a subject (thus creating an additional buffer of cerebrospinal fluid between brain and meninges). In this case, the use of the meningeal boundary as the brain boundary can lead to the cortex being “pushed in” when registered with a template (Figure 3).\n\n\n\n\n\n\nFigure 4: Overlay of Schaefer 400 parcellation regions on normalized scan with atrophy. Arrows indicate potentially problematic inclusion of non-brain due to “gaps” left by normalization.\n\n\n\nChecks on A2CPS outputs that use the fMRIPrep pipeline have not identified any major problems. However, users should be aware of the potential for sampling issues, for example when using regions of interest in cortical areas that may be affected by atrophy (Figure 4).",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "synthstrip.html#other-notes",
+    "href": "synthstrip.html#other-notes",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "Other Notes",
+    "text": "Other Notes\nAlthough in principle the same issue exists in the cortical regions of diffusion MRI products due to the use of SynthStrip by QSIPrep, the practical impact in this case seems inherently limited by the typical focus on white matter in diffusion imaging (white matter normalization is not affected).\nSeveral morphometry measures (e.g., cortical thickness) are provided by pipelines that use different brain extraction or normalization routines and so are not affected by this issue (e.g., CAT12 calculates its brain mask differently, and FreeSurfer uses a surface-based normalization).",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "synthstrip.html#relevant-references",
+    "href": "synthstrip.html#relevant-references",
+    "title": "A2CPS SynthStrip Normalization Issue",
+    "section": "Relevant References",
+    "text": "Relevant References\nBrain extraction remains an active area of research, and the UK Biobank recently surveyed 10 candidate tools judged compatible with its processing to compare accuracy, robustness, and processing time [Almagro et al. 2025].\n[Almagro et al. 2025] Almagro FA, Smith S, and Lange F. Evaluation of Brain Extraction Tools on UK Biobank T1-Weighted MRI Data. Proceedings of the 31st Annual Meeting of the Organization for Human Brain Mapping (OHBM2025). Poster 1631. Brisbane, Australia, June 24-28, 2025. [poster abstracts book: https://zenodo.org/records/15641972]",
+    "crumbs": [
+      "A2CPS SynthStrip Normalization Issue"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "docs",
+    "section": "",
+    "text": "This site hosts additional documentation for A2CPS data.",
+    "crumbs": [
+      "Home"
+    ]
+  }
+]
