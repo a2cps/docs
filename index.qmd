@@ -1,5 +1,5 @@
 ---
-title: "docs"
+title: "A2CPS Docs"
 ---
 
-This site hosts additional documentation for A2CPS data.
+This site hosts documentation for A2CPS data.
