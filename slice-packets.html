@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>A2CPS SynthStrip Normalization Issue – A2CPS Docs</title>
+<title>A2CPS fMRI “Slice Packets” Issue – A2CPS Docs</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -23,7 +23,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -258,7 +277,7 @@ gtag('config', 'G-K3383Z78V7', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./synthstrip.html">A2CPS SynthStrip Normalization Issue</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slice-packets.html">A2CPS fMRI “Slice Packets” Issue</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -294,13 +313,13 @@ gtag('config', 'G-K3383Z78V7', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./synthstrip.html" class="sidebar-item-text sidebar-link active">
+  <a href="./synthstrip.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">A2CPS SynthStrip Normalization Issue</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slice-packets.html" class="sidebar-item-text sidebar-link">
+  <a href="./slice-packets.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">A2CPS fMRI “Slice Packets” Issue</span></a>
   </div>
 </li>
@@ -315,10 +334,9 @@ gtag('config', 'G-K3383Z78V7', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#problem-description" id="toc-problem-description" class="nav-link active" data-scroll-target="#problem-description">Problem Description</a></li>
-  <li><a href="#details" id="toc-details" class="nav-link" data-scroll-target="#details">Details</a></li>
+  <li><a href="#abcda2cps-protocols" id="toc-abcda2cps-protocols" class="nav-link" data-scroll-target="#abcda2cps-protocols">ABCD/A2CPS Protocols</a></li>
   <li><a href="#impacts" id="toc-impacts" class="nav-link" data-scroll-target="#impacts">Impacts</a></li>
-  <li><a href="#other-notes" id="toc-other-notes" class="nav-link" data-scroll-target="#other-notes">Other Notes</a></li>
-  <li><a href="#relevant-references" id="toc-relevant-references" class="nav-link" data-scroll-target="#relevant-references">Relevant References</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -328,7 +346,7 @@ gtag('config', 'G-K3383Z78V7', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">A2CPS SynthStrip Normalization Issue</h1>
+<h1 class="title">A2CPS fMRI “Slice Packets” Issue</h1>
 </div>
 
 
@@ -345,72 +363,60 @@ gtag('config', 'G-K3383Z78V7', { 'anonymize_ip': true});
 </header>
 
 
-<p><a href="https://surfer.nmr.mgh.harvard.edu/docs/synthstrip/">SynthStrip</a> is used in A2CPS Release 2.0 and later for fMRIPrep processing of fMRI, and is used in diffusion MRI products since Release 1.1.</p>
-<p>SynthStrip is now widely used in the neuroimaging community because it is considered “best in class” and provides very reliable and accurate skull stripping. However, its particular assumptions about what that process entails may not always match other tools, possibly introducing limited inaccuracies in normalization in certain cases.</p>
+<p>The information here concerns a theoretical issue in a multiband SMS setup that could impact A2CPS: slice crosstalk may occur when a non-ideal number of slices is used, which would affect sites using the standard ABCD protocol setup with 60 slices for fMRI. In practice no evidence of a problem has been found.</p>
 <section id="problem-description" class="level2">
 <h2 class="anchored" data-anchor-id="problem-description">Problem Description</h2>
-<p>The job of SynthStrip is to remove the skull from a brain image — typically a T1-weighted (T1w) anatomy image, although the tool was designed to work on any modality. Removing the skull is a necessary part of several preprocessing steps, including mapping (normalizing) the brain to other brains, primarily brain templates.</p>
-<div id="fig-synthstrip" class="quarto-float quarto-figure quarto-figure-center anchored">
+<p>The problem was first described by <span class="citation" data-cites="setsompop2012improving">Setsompop et al. (<a href="#ref-setsompop2012improving" role="doc-biblioref">2012</a>)</span>, and was also summarized in the review of SMS by <span class="citation" data-cites="barth2016simultaneous">Barth et al. (<a href="#ref-barth2016simultaneous" role="doc-biblioref">2016</a>)</span>. In essence, the problem is one of timing. In the inherently interleaved acquisition of a multiband scan, sets of slices (“slice subgroups” in <span class="citation" data-cites="setsompop2012improving">Setsompop et al. (<a href="#ref-setsompop2012improving" role="doc-biblioref">2012</a>)</span>, “slice stacks” in <span class="citation" data-cites="barth2016simultaneous">Barth et al. (<a href="#ref-barth2016simultaneous" role="doc-biblioref">2016</a>)</span>, and “slice packets” in subsequent references to those works and current usage) are acquired together, and are arranged to avoid contiguous slices being activated in consecutive TRs.</p>
+<div id="fig-packets" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-synthstrip-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/synthstrip.png" class="img-fluid figure-img">
+<div aria-describedby="fig-packets-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="https://onlinelibrary.wiley.com/cms/asset/398b6349-d25c-4b3a-a4a1-496b2b1d4ab5/mrm25897-fig-0003-m.jpg" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-synthstrip-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: SynthStrip skull stripping includes the meninges (MRI image source: SynthStrip website).
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-packets-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Illustration of slice layout with even (left) vs.&nbsp;odd (right) slice packets (from <span class="citation" data-cites="barth2016simultaneous">Barth et al. (<a href="#ref-barth2016simultaneous" role="doc-biblioref">2016</a>)</span>).
 </figcaption>
 </figure>
 </div>
-<p>There is a lingering vagueness in the imaging field about what “skull stripping” (or “brain extraction”, a term sometimes, but not always, used interchangeably) precisely mean, specifically in the handling of the meninges, the layers of soft tissue between the brain and the skull (<a href="#fig-synthstrip" class="quarto-xref">Figure&nbsp;1</a>). While the terms “skull stripping” and “brain extraction” may perhaps imply an intended handling of the meninges (i.e., “include” versus “exclude”, respectively), in practice tools have not been precise enough until recently to enable distinguishing these rather similar goals, leading to an overlap in the intended meaning of the terms as they’re used by individual tools.</p>
-<p>A result of this imprecision in terminology and processing is that volumetric normalization tools that assume “brain only” data can, when encountering “brain plus meninges”, introduce a degree of mis-mapping. This is the case when supplying fMRIPrep with a mask produced from a default invocation of SynthStrip: SynthStrip produces brains with meninges included, and fMRIPrep then uses these together with templates in which meninges are not present. A T1w mis-mapping ultimately results in incorrect interpretation of other scans, e.g.&nbsp;fMRI, that use the anatomical scan for their own normalization.</p>
+<p>The problem with cross-talk is introduced when slices from one TR inadvertently become contiguous to slices from the next one. <a href="#fig-packets" class="quarto-xref">Figure&nbsp;1</a> shows an illustration of the problem. The left side shows a 12-slice acquisition (slices run vertically) in a MB-2 acquisition with 6 slice packets (numbered 1-6). Color codes indicate the temporal gap (in slice TRs) between a slice acquisition and any contiguous slice over a span of 2 volume TRs, with blue the worst case (shortest gap).</p>
+<p>In the non-ideal case on the left, one slice from the last slice packet (here, 6) is adjacent to a slice from the first in the following volume TR, potentially causing cross-talk and a loss of signal in the second slice. If the number of slice packets is made odd (right side of figure), in this case by cutting the number of slices to 10, the temporal spacing becomes much more uniform, and the problem does not occur. Note that the existence of the problem depends on using the simplest, most straightorward sequential acquisition of slices. Vendors have developed counter-measures in a variety of ways, as shown in the A2CPS data below.</p>
 </section>
-<section id="details" class="level2">
-<h2 class="anchored" data-anchor-id="details">Details</h2>
-<div id="fig-synthstrip-details" class="quarto-float quarto-figure quarto-figure-center anchored">
+<section id="abcda2cps-protocols" class="level2">
+<h2 class="anchored" data-anchor-id="abcda2cps-protocols">ABCD/A2CPS Protocols</h2>
+<p>The ABCD fMRI protocol acquires 60 slices with a multiband factor of 6, which means the number of slice packets should be even (10). However, the A2CPS study modified this setup at two of the initial MCC1 sites (UChicago and NorthShore) by reducing the number of slices to 54, and this change makes the predicted number of slice packets for acquisitions at those sites odd (9).</p>
+<p>Given slice timing information, which is also advantageous to have for slice timing correction in fMRI analyses, we can verify whether any slices are closer than desired, and also review vendor approaches to this issue. <a href="#fig-timing" class="quarto-xref">Figure&nbsp;2</a> shows the variety of slice-timing schemes used across the sites. None exhibit a concerning level of proximity between final/initial slices of subsequent volumes.</p>
+<div id="fig-timing" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-synthstrip-details-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/synthstrip_details.png" class="img-fluid figure-img">
+<div aria-describedby="fig-timing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="slice-packets_files/figure-html/timing-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-synthstrip-details-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Effect of the SynthStrip <code>--no-csf</code> option.
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-timing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: A2CPS slice timing by site, with 60 slice (green) versus 54 slice (red) scans indicated by color. Two volume TRs are shown, with time descending as in Figure 1 and a black line separating the volumes. Note that some scanners automatically alter the slice ordering to avoid cross-talk (e.g., 000000000UM750MR but not 40292).
 </figcaption>
 </figure>
 </div>
-<p>The brain images in <a href="#fig-synthstrip" class="quarto-xref">Figure&nbsp;1</a> showing SynthStrip’s default output on a T1w image are taken from the official SynthStrip website and represent the default output. SynthStrip also has an optional <code>--no-csf</code> argument that attempts to exclude cerebrospinal fluid, which has the effects shown in <a href="#fig-synthstrip-details" class="quarto-xref">Figure&nbsp;2</a>. When using this flag, SynthStrip produces a brain mask without meninges included. We are therefore testing this option for use in future A2CPS releases to mitigate mis-mapping effects.</p>
 </section>
 <section id="impacts" class="level2">
 <h2 class="anchored" data-anchor-id="impacts">Impacts</h2>
-<div id="fig-synthstrip-impacts" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-synthstrip-impacts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/synthstrip_impacts.png" class="img-fluid figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-synthstrip-impacts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Default SynthStrip followed by normalization to a template brain results in gaps (where the cortex is “pushed in”).
-</figcaption>
-</figure>
-</div>
-<p>This issue becomes particularly noticeable if there is cortical atrophy in a subject (thus creating an additional buffer of cerebrospinal fluid between brain and meninges). In this case, the use of the meningeal boundary as the brain boundary can lead to the cortex being “pushed in” when registered with a template (<a href="#fig-synthstrip-impacts" class="quarto-xref">Figure&nbsp;3</a>).</p>
-<div id="fig-synthstrip-impacts2" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-synthstrip-impacts2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/synthstrip_impacts2.png" class="img-fluid figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-synthstrip-impacts2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Overlay of Schaefer 400 parcellation regions on normalized scan with atrophy. Arrows indicate potentially problematic inclusion of non-brain due to “gaps” left by normalization.
-</figcaption>
-</figure>
-</div>
-<p>Checks on A2CPS outputs that use the fMRIPrep pipeline have not identified any major problems. However, users should be aware of the potential for sampling issues, for example when using regions of interest in cortical areas that may be affected by atrophy (<a href="#fig-synthstrip-impacts2" class="quarto-xref">Figure&nbsp;4</a>).</p>
+<p>Based on the analysis of <span class="citation" data-cites="setsompop2012improving">Setsompop et al. (<a href="#ref-setsompop2012improving" role="doc-biblioref">2012</a>)</span>, the expected effect if cross-talk does occur would be for the subsequent adjacent slice (i.e.&nbsp;the slice from slice packet 1 that is adjacent to a slice in the final slice packet of the previous volume) to lose signal and appear darker; there would then be a potential brightness difference between this slice in the first volume (which has no prior volume to reduce its signal) and all later volumes as well as a difference between the affected slice and its neighbors within each volume after the first. The presence of motion will generally exacerbate cross-talk, so any impact on the affected slice may be worse with increased motion. However, we have detected no loss of signal in theoretically vulnerable slices within the A2CPS data.</p>
 </section>
-<section id="other-notes" class="level2">
-<h2 class="anchored" data-anchor-id="other-notes">Other Notes</h2>
-<p>Although in principle the same issue exists in the cortical regions of diffusion MRI products due to the use of SynthStrip by QSIPrep, the practical impact in this case seems inherently limited by the typical focus on white matter in diffusion imaging (white matter normalization is not affected).</p>
-<p>Several morphometry measures (e.g., cortical thickness) are provided by pipelines that use different brain extraction or normalization routines and so are not affected by this issue (e.g., CAT12 calculates its brain mask differently, and FreeSurfer uses a surface-based normalization).</p>
-</section>
-<section id="relevant-references" class="level2">
-<h2 class="anchored" data-anchor-id="relevant-references">Relevant References</h2>
-<p>Brain extraction remains an active area of research, and the UK Biobank recently surveyed 10 candidate tools judged compatible with its processing to compare accuracy, robustness, and processing time [Almagro et al.&nbsp;2025].</p>
-<p>[Almagro et al.&nbsp;2025] Almagro FA, Smith S, and Lange F. Evaluation of Brain Extraction Tools on UK Biobank T1-Weighted MRI Data. Proceedings of the 31st Annual Meeting of the Organization for Human Brain Mapping (OHBM2025). Poster 1631. Brisbane, Australia, June 24-28, 2025. [poster abstracts book: https://zenodo.org/records/15641972]</p>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-barth2016simultaneous" class="csl-entry" role="listitem">
+Barth, Markus, Felix Breuer, Peter J Koopmans, David G Norris, and Benedikt A Poser. 2016. <span>“Simultaneous Multislice (SMS) Imaging Techniques.”</span> <em>Magnetic Resonance in Medicine</em> 75 (1): 63–81. <a href="https://doi.org/10.1002/mrm.25897Digital Object Identifier (DOI)">https://doi.org/10.1002/mrm.25897Digital Object Identifier (DOI)</a>.
+</div>
+<div id="ref-setsompop2012improving" class="csl-entry" role="listitem">
+Setsompop, Kawin, Julien Cohen-Adad, Borjan A Gagoski, et al. 2012. <span>“Improving Diffusion MRI Using Simultaneous Multi-Slice Echo Planar Imaging.”</span> <em>Neuroimage</em> 63 (1): 569–80. <a href="https://doi.org/10.1016/j.neuroimage.2012.06.033">https://doi.org/10.1016/j.neuroimage.2012.06.033</a>.
+</div>
+</div>
 
 
 </section>
