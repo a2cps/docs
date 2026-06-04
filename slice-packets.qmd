@@ -1,0 +1,113 @@
+---
+title: 'A2CPS fMRI "Slice Packets" Issue'
+bibliography: references.bib
+---
+
+```{r setup}
+#| include: false
+library(dplyr)
+library(ggplot2)
+```
+
+The information here concerns a theoretical issue in a multiband SMS setup that could impact A2CPS: slice crosstalk may occur when a non-ideal number of slices is used, which would affect sites using the standard ABCD protocol setup with 60 slices for fMRI. In practice no evidence of a problem has been found.
+
+## Problem Description
+
+The problem was first described by @setsompop2012improving, and was also summarized in the review of SMS by @barth2016simultaneous. In essence, the problem is one of timing. In the inherently interleaved acquisition of a multiband scan, sets of slices ("slice subgroups" in @setsompop2012improving, "slice stacks" in @barth2016simultaneous, and "slice packets" in subsequent references to those works and current usage) are acquired together, and are arranged to avoid contiguous slices being activated in consecutive TRs.
+
+
+::: {#fig-packets}
+
+![](https://onlinelibrary.wiley.com/cms/asset/398b6349-d25c-4b3a-a4a1-496b2b1d4ab5/mrm25897-fig-0003-m.jpg)
+
+Illustration of slice layout with even (left) vs. odd (right) slice packets (from @barth2016simultaneous).
+
+:::
+
+The problem with cross-talk is introduced when slices from one TR inadvertently become contiguous to slices from the next one. @fig-packets shows an illustration of the problem. The left side shows a 12-slice acquisition (slices run vertically) in a MB-2 acquisition with 6 slice packets (numbered 1-6). Color codes indicate the temporal gap (in slice TRs) between a slice acquisition and any contiguous slice over a span of 2 volume TRs, with blue the worst case (shortest gap). 
+
+In the non-ideal case on the left, one slice from the last slice packet (here, 6) is adjacent to a slice from the first in the following volume TR, potentially causing cross-talk and a loss of signal in the second slice. If the number of slice packets is made odd (right side of figure), in this case by cutting the number of slices to 10, the temporal spacing becomes much more uniform, and the problem does not occur.
+Note that the existence of the problem depends on using the simplest, most straightorward sequential acquisition of slices. Vendors have developed counter-measures in a variety of ways, as shown in the A2CPS data below.
+
+## ABCD/A2CPS Protocols
+
+The ABCD fMRI protocol acquires 60 slices with a multiband factor of 6, which means the number of slice packets should be even (10). However, the A2CPS study modified this setup at two of the initial MCC1 sites (UChicago and NorthShore) by reducing the number of slices to 54, and this change makes the predicted number of slice packets for acquisitions at those sites odd (9).
+
+Given slice timing information, which is also advantageous to have for slice timing correction in fMRI analyses, we can verify whether any slices are closer than desired, and also review vendor approaches to this issue. @fig-timing shows the variety of slice-timing schemes used across the sites. None exhibit a concerning level of proximity between final/initial slices of subsequent volumes.
+
+::: {#fig-timing}
+
+```{r timing}
+#| echo: false
+#| fig-height: 10
+#| fig-width: 10
+serials <- c(
+  "000000000UM750MR",
+  "000000312996MR3T",
+  "0007347633TMRFIX",
+  "166295",
+  "213020",
+  "40292",
+  "66022",
+  "70032",
+  "71399"
+)
+
+repetition_time <- purrr::map(
+  serials,
+  ~ tibble::tibble(
+    tr = glue::glue(
+      "https://raw.githubusercontent.com/a2cps/mri_imaging_pipeline/refs/heads/master/heudiconv_app/bids-jsons/serial-{.x}_task-rest_bold.json"
+    ) |>
+      jsonlite::read_json(simplifyVector = TRUE) |>
+      purrr::pluck("RepetitionTime")
+  ) |>
+    dplyr::mutate(scanner = .x)
+) |>
+  dplyr::bind_rows()
+
+slice_timing <- purrr::map(
+  serials,
+  ~ glue::glue(
+    "https://raw.githubusercontent.com/a2cps/mri_imaging_pipeline/refs/heads/master/heudiconv_app/bids-jsons/serial-{.x}_task-rest_bold.json"
+  ) |>
+    jsonlite::read_json(simplifyVector = TRUE) |>
+    purrr::pluck("SliceTiming") |>
+    tibble::enframe(name = "Slice", value = "Time") |>
+    dplyr::mutate(scanner = .x)
+) |>
+  dplyr::bind_rows() |>
+  dplyr::mutate(
+    packet = as.factor(Time) |> as.integer(),
+    even_packets = ((dplyr::n_distinct(Slice) / sum(packet == 1)) %% 2) == 0,
+    .by = scanner
+  ) |>
+  dplyr::left_join(repetition_time, by = dplyr::join_by(scanner)) |>
+  tidyr::crossing(volume = c(0, 1)) |>
+  dplyr::mutate(Time = Time + tr * volume)
+
+slice_timing |>
+  ggplot(aes(x = Slice, y = Time)) +
+  geom_hline(yintercept = 0.75) +
+  geom_label(aes(label = packet, color = even_packets)) +
+  scale_y_continuous(
+    name = "Time (seconds) -->"
+  ) +
+  scale_color_discrete(name = "Slices/Multiband Factor is Even") +
+  facet_wrap(~scanner) +
+  theme(legend.position = "bottom")
+```
+
+A2CPS slice timing by site, with 60 slice (green) versus 54 slice (red) scans indicated by color. Two volume TRs are shown, with time descending as in Figure 1 and a black line separating the volumes. Note that some scanners automatically alter the slice ordering to avoid cross-talk (e.g., 000000000UM750MR but not 40292).
+
+:::
+
+## Impacts
+
+Based on the analysis of @setsompop2012improving, the expected effect if cross-talk does occur would be for the subsequent adjacent slice (i.e. the slice from slice packet 1 that is adjacent to a slice in the final slice packet of the previous volume) to lose signal and appear darker; there would then be a potential brightness difference between this slice in the first volume (which has no prior volume to reduce its signal) and all later volumes as well as a difference between the affected slice and its neighbors within each volume after the first. The presence of motion will generally exacerbate cross-talk, so any impact on the affected slice may be worse with increased motion. However, we have detected no loss of signal in theoretically vulnerable slices within the A2CPS data.
+
+## References
+
+
+::: {#refs}
+:::

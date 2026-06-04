@@ -11,3 +11,6 @@ data/
 *cache/*
 *files/*
 **/*.quarto_ipynb
+# pixi environments
+.pixi/*
+!.pixi/config.toml
