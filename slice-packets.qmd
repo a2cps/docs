@@ -18,9 +18,9 @@ The problem was first described by @setsompop2012improving, and was also summari
 
 ::: {#fig-packets}
 
-![](https://onlinelibrary.wiley.com/cms/asset/398b6349-d25c-4b3a-a4a1-496b2b1d4ab5/mrm25897-fig-0003-m.jpg)
+![](images/mrm25897-fig-0003-m.jpg)
 
-Illustration of slice layout with even (left) vs. odd (right) slice packets (from @barth2016simultaneous).
+Illustration of slice layout with even (left) vs. odd (right) slice packets [from @barth2016simultaneous].
 
 :::
 
